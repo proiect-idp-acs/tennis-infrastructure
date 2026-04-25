@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+
+  # MANAGEMENT & GATEWAY (public network)
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "9000:9000" # accesibil in browser pe localhost:9000
+    networks:
+      - gateway_net
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  kong:
+    image: kong:latest
+    environment:
+      KONG_DATABASE: "off"
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+    ports:
+      - "8000:8000" # swagger
+    networks:
+      - gateway_net
+      - backend_net
+
+  # BAZA DE DATE (db network)
+
+  postgres_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: tennis_admin
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: tennis_db
+    networks:
+      - db_net
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@tennis.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80" # accesibil in browser pe localhost:5050
+    networks:
+      - gateway_net
+      - db_net
+
+
+
+  # MICROSERVICIILE (backend network)
+
+  auth_service:
+    image: my-tennis-auth:latest
+    ports:
+      - "5001:5001" # Expunem portul pentru testare locală
+    networks:
+      - backend_net
+
+  data_service:
+    image: my-tennis-data:latest
+    environment:
+      DATABASE_URL: "postgresql://tennis_admin:supersecretpassword@postgres_db:5432/tennis_db"
+    ports:
+      - "5002:5002"
+    networks:
+      - db_net
+      - backend_net
+
+  match_service:
+    image: my-tennis-match:latest
+    ports:
+      - "5003:5003"
+    networks:
+      - backend_net
+
+
+# RETELE
+
+networks:
+  gateway_net:
+    driver: overlay
+    attachable: true
+  backend_net:
+    driver: overlay
+    attachable: true
+  db_net:
+    driver: overlay
+    attachable: true
+
+volumes:
+  portainer_data:
