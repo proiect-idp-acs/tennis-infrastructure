@@ -22,9 +22,12 @@ services:
     image: kong:latest
     environment:
       KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: "/kong/declarative/kong.yml" # de unde să citească
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_PROXY_LISTEN: 0.0.0.0:8000
+    volumes:
+      - ./kong.yml:/kong/declarative/kong.yml # Montăm fișierul de pe local în container
     ports:
       - "8000:8000" # swagger
     networks:
@@ -39,6 +42,8 @@ services:
       POSTGRES_USER: tennis_admin
       POSTGRES_PASSWORD: supersecretpassword
       POSTGRES_DB: tennis_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - db_net
     deploy:
@@ -62,8 +67,6 @@ services:
 
   auth_service:
     image: my-tennis-auth:latest
-    ports:
-      - "5001:5001" # Expunem portul pentru testare locală
     networks:
       - backend_net
 
@@ -79,8 +82,6 @@ services:
 
   match_service:
     image: my-tennis-match:latest
-    ports:
-      - "5003:5003"
     networks:
       - backend_net
 
@@ -100,3 +101,4 @@ networks:
 
 volumes:
   portainer_data:
+  postgres_data:

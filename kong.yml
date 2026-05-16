@@ -1,0 +1,25 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  # ==========================================
+  # 1. PLAYER AUTH SERVICE
+  # ==========================================
+  - name: auth-service
+    url: http://auth_service:5001
+    routes:
+      - name: auth-routes
+        paths:
+          - /api/auth
+        strip_path: false # Trimite ruta exact așa cum o scrie utilizatorul
+
+  # ==========================================
+  # 2. MATCH MANAGEMENT SERVICE
+  # ==========================================
+  - name: match-service
+    url: http://match_service:5003
+    routes:
+      - name: match-routes
+        paths:
+          - /api/matches
+        strip_path: false
