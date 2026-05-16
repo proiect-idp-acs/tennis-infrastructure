@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 5s # Strange la fiecare 5 secunde pentru a avea date real time
+
+scrape_configs:
+  - job_name: 'auth_service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['auth_service:5001']
+
+  - job_name: 'data_service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['data_service:5002']
+
+  - job_name: 'match_service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['match_service:5003']

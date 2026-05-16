@@ -61,6 +61,26 @@ services:
       - gateway_net
       - db_net
 
+# MONITORIZARE (Prometheus & Grafana)
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - backend_net
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000" # Accesibil în browser pe localhost:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - gateway_net
+      - backend_net
+
+
 
 
   # MICROSERVICIILE (backend network)
@@ -102,3 +122,4 @@ networks:
 volumes:
   portainer_data:
   postgres_data:
+  grafana_data:
